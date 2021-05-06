@@ -4,7 +4,7 @@ const { Sequelize } = require("sequelize");
 const definitions = require("./models");
 const debug = require("debug")("sequelize: [startup]")
 
-function createSequelize(path = null) {
+async function createSequelize(path = null) {
   // create a Sequelize instance pointing to the given path
   // if no path is given, Sequelize points to a new database in memory (temporary database)
   if (path) {
@@ -16,7 +16,8 @@ function createSequelize(path = null) {
     });
   } else {
     debug(`Creating new sequelize to :memory:`)
-    return new Sequelize("sqlite::memory:", {logging:false});
+    const db = new Sequelize("sqlite::memory:", {logging:false})
+    return db;
   }
 }
 

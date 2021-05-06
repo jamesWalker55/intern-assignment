@@ -58,7 +58,7 @@ class SequelizeWrapper {
     } else {
       debug(`Connecting to temporary database at :memory:`);
     }
-    this.sequelize = sq.createSequelize(path);
+    this.sequelize = await sq.createSequelize(path);
     await sq.verifyConnection(this.sequelize);
     await sq.initialaizeDatabase(this.sequelize);
     this.customer = this.sequelize.models.customer;
@@ -89,7 +89,7 @@ class SequelizeWrapper {
 
   /**
    * remove a customer from waitlist, given the index in the waitlist
-   * 
+   *
    * throws NoCustomerError if index doesn't correspond to a customer
    */
   async removeCustomer(index) {
@@ -119,7 +119,7 @@ class SequelizeWrapper {
     debug(`obtained waitlist`);
     return waitlist;
   }
-  
+
   /**
    * return waitlist size limit, 0 represents no limit
    */
@@ -136,7 +136,7 @@ class SequelizeWrapper {
     debug(`got waitlist limit = ${limit}`);
     return limit;
   }
-  
+
   /**
    * set waitlist size limit; value of 0 disables limit
    */

@@ -3,7 +3,7 @@ const debug = require("debug")("sequelize: main")
 
 async function main() {
   debug("creating sequelize instance")
-  const db = sq.createSequelize();
+  const db = await sq.createSequelize();
   debug("verifying sequelize instance")
   await sq.verifyConnection(db);
   debug("initializing database")
