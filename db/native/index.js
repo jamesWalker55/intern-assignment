@@ -108,6 +108,6 @@ class NativeModel {
   }
 }
 
-const model = new NativeModel();
+const db = new NativeModel();
 
-module.exports = model;
+module.exports = db;

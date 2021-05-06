@@ -117,7 +117,7 @@ describe("Database", () => {
           customer.should.have.all.keys(CUSTOMER_PROPERTIES);
         }
       });
-      it("the waitlist is not directly linked to the database waitlist", async () => {
+      it("the waitlist does not reference database waitlist", async () => {
         // get waitlist
         let waitlist = await db.waitlist();
         // remove some customers from retrieved list
