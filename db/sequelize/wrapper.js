@@ -2,6 +2,9 @@ const sq = require("./sequelize");
 const debug = require("debug")("sequelize: wrapper");
 
 class SequelizeWrapper {
+  // constants for Config
+  WAITLIST_LIMIT_KEY = "waitlist_limit";
+
   // define errors
   ConnectionError = class extends Error {
     constructor() {
@@ -38,8 +41,9 @@ class SequelizeWrapper {
   }
 
   checkConnection() {
+    // checks if connection is made, this.sequelize must be set
     if (!this.sequelize) {
-      throw new this.ConnectionError("Connection is not established yet!")
+      throw new this.ConnectionError("Connection is not established yet!");
     }
   }
 
@@ -59,6 +63,7 @@ class SequelizeWrapper {
     await sq.initialaizeDatabase(this.sequelize);
     this.customer = this.sequelize.models.customer;
     this.config = this.sequelize.models.config;
+    debug(`Connection success!`);
   }
 
   /**
@@ -67,10 +72,18 @@ class SequelizeWrapper {
    * throws WaitlistLimitError if operation exceeds size-limit
    */
   async addCustomer(name, phone) {
-    this.checkConnection();
+    // waitlistLimitReached already checks connection, no need for this.checkConnection()
+    debug(`Adding customer with (${name}, ${phone})`);
+    const limitReached = await this.waitlistLimitReached();
+    if (limitReached) {
+      const limit = await this.getWaitlistLimit();
+      debug(`Waitlist limit reached, discarding (${name}, ${phone})`);
+      throw new this.WaitlistLimitError(`Adding customer exceeds waitlist limit of ${limit}.`)
+    }
     const instance = await this.customer.quickCreate(name, phone);
     // customer must be added at end of list, so length of list - 1 == customer index
     const waitlistLength = await this.customer.count();
+    debug(`Added customer with (${name}, ${phone})`);
     return this.Customer(instance, waitlistLength - 1);
   }
 
@@ -80,16 +93,30 @@ class SequelizeWrapper {
    * throws NoCustomerError if index doesn't correspond to a customer
    */
   async removeCustomer(index) {
+    debug(`removing customer with list index (${index})`);
     this.checkConnection();
+    const match = await this.customer.getFromListIndex(index);
+    if (!match) {
+      const message = `No customer with index ${index} found.`;
+      debug(message);
+      throw new this.NoCustomerError(message);
+    }
+    await this.customer.destroyByID(match.id);
+    debug(`removed customer with (${index}) => (${match.name}, ${match.phone})`);
+    return this.Customer(match, index);
   }
 
   /**
    * return the waitlist as an array of customer objects
    */
   async waitlist() {
+    debug(`obtaining waitlist`);
     this.checkConnection();
     const waitlistRaw = await this.customer.listAll();
-    const waitlist = waitlistRaw.map((instance, i) => this.Customer(instance, i));
+    const waitlist = waitlistRaw.map((instance, i) =>
+      this.Customer(instance, i)
+    );
+    debug(`obtained waitlist`);
     return waitlist;
   }
   
@@ -97,21 +124,46 @@ class SequelizeWrapper {
    * return waitlist size limit, 0 represents no limit
    */
   async getWaitlistLimit() {
+    debug(`getting waitlist limit`);
     this.checkConnection();
+    const limitRaw = await this.config.get(this.WAITLIST_LIMIT_KEY);
+    // all values from config are strings, so parse it first
+    const limit = parseInt(limitRaw);
+    if (Number.isNaN(limit)) {
+      debug(`invalid limit ${limitRaw}, treating as 0`);
+      return 0;
+    }
+    debug(`got waitlist limit = ${limit}`);
+    return limit;
   }
   
   /**
    * set waitlist size limit; value of 0 disables limit
    */
-  async setWaitlistLimit(limit) {
+  async setWaitlistLimit(limitRaw) {
+    debug(`setting waitlist limit`);
     this.checkConnection();
+    const limit = parseInt(limitRaw);
+    if (limit < 0 || Number.isNaN(limit)) {
+      debug(`invalid limit ${limitRaw}, treating as 0`);
+      limit = 0;
+    }
+    await this.config.set(this.WAITLIST_LIMIT_KEY, limit);
+    debug(`set waitlist limit = ${limit}`);
+    return limit;
   }
 
   /**
    * check if limit has been reached; value of 0 disables limit
    */
   async waitlistLimitReached() {
-    this.checkConnection();
+    // getWaitlistLimit already checks connection, no need for this.checkConnection()
+    const limit = await this.getWaitlistLimit();
+    if (limit == 0) return false;
+    const waitlistLength = await this.customer.count();
+    const limitReached = waitlistLength >= limit;
+    debug(`determined waitlist limit has${limitReached ? "" : " not"} been reached ${limitReached}`);
+    return limitReached;
   }
 }
 
