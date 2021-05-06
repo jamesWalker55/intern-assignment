@@ -62,7 +62,7 @@ class NativeModel {
 
   /**
    * remove a customer from waitlist, given the index in the waitlist
-   * 
+   *
    * throws NoCustomerError if index doesn't correspond to a customer
    */
   async removeCustomer(index) {
@@ -81,7 +81,7 @@ class NativeModel {
     if (this.list === undefined) throw new this.ConnectionError();
     return this.list.map((x, i) => this.Customer(x[0], x[1], i));
   }
-  
+
   /**
    * return waitlist size limit, 0 represents no limit
    */
@@ -89,7 +89,7 @@ class NativeModel {
     if (this.limit === undefined) throw new this.ConnectionError();
     return this.limit;
   }
-  
+
   /**
    * set waitlist size limit; value of 0 disables limit
    */

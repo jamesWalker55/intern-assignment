@@ -80,7 +80,9 @@ class SequelizeWrapper {
     if (limitReached) {
       const limit = await this.getWaitlistLimit();
       debug(`Waitlist limit reached, discarding (${name}, ${phone})`);
-      throw new this.WaitlistLimitError(`Adding customer exceeds waitlist limit of ${limit}.`)
+      throw new this.WaitlistLimitError(
+        `Adding customer exceeds waitlist limit of ${limit}.`
+      );
     }
     const instance = await this.customer.quickCreate(name, phone);
     // customer must be added at end of list, so length of list - 1 == customer index
@@ -104,7 +106,9 @@ class SequelizeWrapper {
       throw new this.NoCustomerError(message);
     }
     await this.customer.destroyByID(match.id);
-    debug(`removed customer with (${index}) => (${match.name}, ${match.phone})`);
+    debug(
+      `removed customer with (${index}) => (${match.name}, ${match.phone})`
+    );
     return this.Customer(match, index);
   }
 
@@ -164,7 +168,11 @@ class SequelizeWrapper {
     if (limit == 0) return false;
     const waitlistLength = await this.customer.count();
     const limitReached = waitlistLength >= limit;
-    debug(`determined waitlist limit has${limitReached ? "" : " not"} been reached ${limitReached}`);
+    debug(
+      `determined waitlist limit has${
+        limitReached ? "" : " not"
+      } been reached ${limitReached}`
+    );
     return limitReached;
   }
 }
