@@ -19,6 +19,7 @@ function errorHandler(err, req, res, next) {
   })
 }
 
-db.connectTo();
+// initialise database
+db.connectTo("database.sqlite");
 
 module.exports = app;
