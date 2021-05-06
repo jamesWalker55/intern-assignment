@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "set DEBUG=myapp:* & npm start",
-    "test": "node ./node_modules/mocha/bin/mocha --bail --reporter spec"
+    "test": "node ./node_modules/mocha/bin/mocha --bail --reporter spec",
+    "repl": "set DEBUG=* & node --trace-warnings --experimental-repl-await",
+    "repl-ps": "$env:DEBUG = \"*,-not_this\";node --trace-warnings --experimental-repl-await"
   },
   "dependencies": {
     "debug": "~2.6.9",
