@@ -1,6 +1,14 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
 const db = require("../db");
+const debug = require("debug")("router");
+
+class RoutingError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = `RoutingError`;
+  }
+}
 
 // wrap async functions so that any errors are handled by
 // espress.js's error handler
@@ -25,6 +33,7 @@ router.post("/limit/", asyncFuncHandler(setWaitlistLimit));
 
 async function getWaitlist(req, res) {
   // list all customers in waitlist
+  debug("Getting waitlist");
   const waitlist = await db.waitlist();
   res.send(waitlist);
 }
@@ -32,20 +41,23 @@ async function getWaitlist(req, res) {
 // add customer to waitlist
 async function addCustomer(req, res) {
   // input validation
-  if (name === undefined || phone === undefined)
-    throw "name or phone is undefined.";
+  if (req.body.name === undefined || req.body.phone === undefined) {
+    throw new RoutingError("name or phone is not provided.");
+  }
   const name = String(req.body.name);
   const phone = String(req.body.phone);
 
+  // create customer then return it
   const customer = await db.addCustomer(name, phone);
-  // return the created customer
   res.status(201).send(customer);
 }
 
 async function removeCustomer(req, res) {
   // input validation
   const index = parseInt(req.body.index);
-  if (Number.isNaN(index)) throw `Invalid index ${req.body.index}.`;
+  if (Number.isNaN(index)) {
+    throw new RoutingError(`Invalid index (${req.body.index}).`);
+  }
 
   const customer = await db.removeCustomer(index);
   // return the removed customer
@@ -56,7 +68,9 @@ async function removeCustomer(req, res) {
 async function setWaitlistLimit(req, res) {
   // input validation
   const limit = parseInt(req.body.limit);
-  if (Number.isNaN(limit)) throw `Invalid limit ${req.body.limit}.`;
+  if (Number.isNaN(limit)) {
+    throw new RoutingError(`Invalid limit (${req.body.limit}).`);
+  }
 
   await db.setWaitlistLimit(limit);
   res.status(200).send([await db.getWaitlistLimit()]);
