@@ -2,7 +2,7 @@
 
 This is a REST API implemented in NodeJS, using the **express.js** framework as the base.
 
-Note: Node version >= 12 is required for this server.
+Note: Node version >= 12 is required for this server. The server was developed and tested with Node v14.15.3 on Windows and Linux.
 
 ## Start the server / Running unit tests
 
