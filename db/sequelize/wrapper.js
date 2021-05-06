@@ -9,8 +9,8 @@ class SequelizeWrapper {
 
   // define errors
   ConnectionError = class extends Error {
-    constructor() {
-      super("Not connected to database yet!");
+    constructor(message) {
+      super(message);
       this.name = `ConnectionError`;
     }
   };
