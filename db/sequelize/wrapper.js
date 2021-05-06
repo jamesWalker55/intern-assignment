@@ -61,7 +61,10 @@ class SequelizeWrapper {
       debug(`Connecting to temporary database at :memory:`);
     }
     this.sequelize = await sq.createSequelize(path);
-    await sq.verifyConnection(this.sequelize);
+    const connectionOk = await sq.verifyConnection(this.sequelize);
+    if (!connectionOk) {
+      throw new this.ConnectionError("Connection cannot be established!");
+    }
     await sq.initialaizeDatabase(this.sequelize);
     this.customer = this.sequelize.models.customer;
     this.config = this.sequelize.models.config;

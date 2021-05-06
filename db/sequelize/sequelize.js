@@ -4,9 +4,12 @@ const { Sequelize } = require("sequelize");
 const definitions = require("./models");
 const debug = require("debug")("sequelize: [startup]");
 
+/**
+ * create a Sequelize instance pointing to the given path
+ *
+ * if no path is given, Sequelize points to a new database in memory (temporary database)
+ */
 async function createSequelize(path = null) {
-  // create a Sequelize instance pointing to the given path
-  // if no path is given, Sequelize points to a new database in memory (temporary database)
   if (path) {
     debug(`Creating new sequelize to ${path}`);
     return new Sequelize({
@@ -21,8 +24,10 @@ async function createSequelize(path = null) {
   }
 }
 
+/**
+ * test if database connection is successful
+ */
 async function verifyConnection(sequelize) {
-  // test if database connection is successful
   debug(`Verifing sequelize...`);
   try {
     await sequelize.authenticate();
@@ -34,22 +39,26 @@ async function verifyConnection(sequelize) {
   }
 }
 
-// define a model given the Sequelize instance and the exported object of each model module
-function defineModel(sequelize, modelDefinition) {
-  const model = modelDefinition.model;
-  const attributes = modelDefinition.attributes;
-  const options = modelDefinition.options;
-
-  const final_options = Object.assign({ sequelize }, options);
-  return model.init(attributes, final_options);
-}
-
+/**
+ * setup database, creating tables and defining the customer model
+ */
 async function initialaizeDatabase(sequelize) {
-  // setup database, creating tables and defining the customer model
+  function defineModel(sequelize, modelDefinition) {
+    // setup a model, given the sequelize instance and the exported object from ./models
+    const model = modelDefinition.model;
+    const attributes = modelDefinition.attributes;
+    const options = modelDefinition.options;
+
+    const final_options = Object.assign({ sequelize }, options);
+    return model.init(attributes, final_options);
+  }
+
+  // define each model in ./models
   for (const modelDef of definitions) {
     debug(`Defining model with ${modelDef}`);
     defineModel(sequelize, modelDef);
   }
+  // sync with sequelize
   debug(`Syncing database with model`);
   await sequelize.sync({ alter: true });
 }

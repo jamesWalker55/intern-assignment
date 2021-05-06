@@ -1,7 +1,7 @@
 "use strict";
 
 const { DataTypes, Model } = require("sequelize");
-const debug = require("debug")("sequelize: Customer")
+const debug = require("debug")("sequelize: Customer");
 
 // define table columns
 const attributes = {
@@ -30,7 +30,7 @@ class Customer extends Model {
    * list all customers in database, ordered by insertion time (i.e. the waitlist)
    */
   static async listAll() {
-    debug("Getting list of all customers")
+    debug("Getting list of all customers");
     return await this.findAll({ order: ["createdAt"] });
   }
 
@@ -41,10 +41,10 @@ class Customer extends Model {
    */
   static async getFromListIndex(index) {
     const customers = await this.listAll();
-    debug(`Getting customer from list index: ${index}`)
+    debug(`Getting customer from list index: ${index}`);
     const matches = customers.slice(index, index + 1);
     const customer = matches.length == 1 ? matches[0] : null;
-    debug(`Found customer: ${customer}`)
+    debug(`Found customer: ${customer}`);
     return customer;
   }
 
@@ -52,7 +52,7 @@ class Customer extends Model {
    * create a customer given the name and phone
    */
   static async quickCreate(name, phone) {
-    debug(`Creating customer from (${name}, ${phone})`)
+    debug(`Creating customer from (${name}, ${phone})`);
     return await this.create({ name: name, phone: phone });
   }
 
@@ -60,7 +60,7 @@ class Customer extends Model {
    * destroy an instance given the database id
    */
   static async destroyByID(id) {
-    debug(`Destroying customer with id=(${id})`)
+    debug(`Destroying customer with id=(${id})`);
     return await this.destroy({ where: { id: id } });
   }
 }

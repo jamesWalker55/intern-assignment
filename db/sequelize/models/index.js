@@ -1,6 +1,3 @@
 "use strict";
 
-module.exports = [
-  require("./customers"),
-  require("./config"),
-]
+module.exports = [require("./customers"), require("./config")];

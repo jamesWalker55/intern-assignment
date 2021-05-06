@@ -1,6 +1,7 @@
 // A fake database backed by an array
 // Used before sqlite3 database is implemented
 // Passes all unit tests
+
 const debug = require("debug")("native: main");
 
 class NativeModel {

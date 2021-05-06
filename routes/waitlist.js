@@ -59,8 +59,8 @@ async function removeCustomer(req, res) {
     throw new RoutingError(`Invalid index (${req.body.index}).`);
   }
 
+  // remove customer then return it
   const customer = await db.removeCustomer(index);
-  // return the removed customer
   res.status(200).send(customer);
 }
 
@@ -72,11 +72,12 @@ async function setWaitlistLimit(req, res) {
     throw new RoutingError(`Invalid limit (${req.body.limit}).`);
   }
 
+  // set limit then return it
   await db.setWaitlistLimit(limit);
   res.status(200).send([await db.getWaitlistLimit()]);
 }
 
-// set waitlist limit
+// get waitlist limit
 async function getWaitlistLimit(req, res) {
   res.status(200).send([await db.getWaitlistLimit()]);
 }
