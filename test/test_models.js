@@ -197,7 +197,7 @@ describe("Database", () => {
         const oldLength = (await db.waitlist()).length;
         const firstCustomer = await db.removeCustomer(0);
         firstCustomer.should.have.property("name", customers[0][0]);
-        return db.addCustomer("allowed", "yes").should.not.throw;
+        await db.addCustomer("5 customers", "limit 5");
       });
     });
     describe("waitlist with 5 customers, size-limit of 3 set afterwards", () => {
@@ -211,8 +211,7 @@ describe("Database", () => {
       before(async () => {
         await db.connectTo();
         for (const [name, phone] of customers) {
-          const customer = await db.addCustomer(name, phone);
-          customer.should.have.all.keys(CUSTOMER_PROPERTIES);
+          await db.addCustomer(name, phone);
         }
         await db.setWaitlistLimit(3);
       });
@@ -222,11 +221,13 @@ describe("Database", () => {
           .should.be.rejectedWith(db.WaitlistLimitError);
       });
       it("can add a customer after removing 3 customers", async () => {
+        console.log(await db.waitlist());
         for (let i = 0; i < 3; i++) {
           // remove first 3 customers
           await db.removeCustomer(0);
         }
-        return db.addCustomer("allowed", "yes").should.be.fulfilled;
+        console.log(await db.waitlist());
+        return db.addCustomer("5 customers", "limit 3").should.be.fulfilled;
       });
     });
   });
