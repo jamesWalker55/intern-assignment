@@ -221,12 +221,10 @@ describe("Database", () => {
           .should.be.rejectedWith(db.WaitlistLimitError);
       });
       it("can add a customer after removing 3 customers", async () => {
-        console.log(await db.waitlist());
         for (let i = 0; i < 3; i++) {
           // remove first 3 customers
           await db.removeCustomer(0);
         }
-        console.log(await db.waitlist());
         return db.addCustomer("5 customers", "limit 3").should.be.fulfilled;
       });
     });
