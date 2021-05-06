@@ -89,6 +89,26 @@ describe("Database", () => {
       });
     });
   });
+  describe("when database is not initialized, these methods should throw ConnectionError", () => {
+    it("#addCustomer( name, phone )", () => {
+      return db.addCustomer("not", "allowed").should.be.rejectedWith(db.ConnectionError);
+    });
+    it("#removeCustomer( index )", () => {
+      return db.removeCustomer(0).should.be.rejectedWith(db.ConnectionError);
+    });
+    it("#waitlist()", () => {
+      return db.waitlist().should.be.rejectedWith(db.ConnectionError);
+    });
+    it("#getWaitlistLimit()", () => {
+      return db.getWaitlistLimit().should.be.rejectedWith(db.ConnectionError);
+    });
+    it("#setWaitlistLimit( limit )", () => {
+      return db.setWaitlistLimit(10).should.be.rejectedWith(db.ConnectionError);
+    });
+    it("#waitlistLimitReached()", () => {
+      return db.waitlistLimitReached().should.be.rejectedWith(db.ConnectionError);
+    });
+  })
   describe("operations", () => {
     // for each test case, use a new empty temporary database
     describe("adding 3 customers", () => {
