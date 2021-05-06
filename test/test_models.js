@@ -1,61 +1,71 @@
-var should = require("should");
+// use chai assertion module
+var chai = require("chai");
+var chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+chai.should();
+
+// import database
 var db = require("../db");
 
 const CUSTOMER_PROPERTIES = ["name", "phone", "index"];
 
-function arraysEqual(a1, a2) {
-  // test that 2 arrays are equal
-  function testElement(e1, e2) {
-    // test 2 array elements, may be arrays
-    if (Array.isArray(e1)) return arraysEqual(e1, e2);
-    return e1 === e2;
-  }
-  if (!(Array.isArray(a1) && Array.isArray(a2))) return false;
-  if (a1.length != a2.length) return false;
-  for (let i = 0; i < a1.length; i++) {
-    const isEqual = testElement(a1[i], a2[i]);
-    if (!isEqual) return false;
-  }
-  return true;
-}
-
 describe("Database", () => {
-  describe("db methods", () => {
+  describe("methods", () => {
     // when `connectTo` is called without arguments, it should
     // connect to a temporary database for unit testing
-    before(() => db.connectTo());
-    describe("#connectTo( (path) )", () => {
+    before(db.connectTo);
+    describe("#connectTo( [path] )", () => {
       it("is present", () => {
         db.should.have.property("connectTo");
-        db.connectTo.should.be.a.Function();
+        db.connectTo.should.be.a("function");
+      });
+      it("can take 0 arguments", () => {
+        db.connectTo.should.have.property("length", 0);
       });
     });
     describe("#addCustomer( name, phone )", () => {
       it("is present", () => {
         db.should.have.property("addCustomer");
-        db.addCustomer.should.be.a.Function();
+        db.addCustomer.should.be.a("function");
+      });
+      it("can take 2 arguments", () => {
+        db.addCustomer.should.have.property("length", 2);
       });
     });
     describe("#removeCustomer( index )", () => {
       it("is present", () => {
         db.should.have.property("removeCustomer");
-        db.removeCustomer.should.be.a.Function();
+        db.removeCustomer.should.be.a("function");
+      });
+      it("can take 1 argument", () => {
+        db.removeCustomer.should.have.property("length", 1);
       });
     });
-    describe("get ::waitlist", () => {
+    describe("#waitlist()", () => {
       it("is present", () => {
         db.should.have.property("waitlist");
+        db.waitlist.should.be.a("function");
       });
     });
-    describe("set/get ::waitlistLimit", () => {
+    describe("#getWaitlistLimit()", () => {
       it("is present", () => {
-        db.should.have.property("waitlistLimit");
+        db.should.have.property("getWaitlistLimit");
+        db.getWaitlistLimit.should.be.a("function");
+      });
+    });
+    describe("#setWaitlistLimit( limit )", () => {
+      it("is present", () => {
+        db.should.have.property("setWaitlistLimit");
+        db.setWaitlistLimit.should.be.a("function");
+      });
+      it("can take 1 argument", () => {
+        db.setWaitlistLimit.should.have.property("length", 1);
       });
     });
     describe("#waitlistLimitReached()", () => {
       it("is present", () => {
         db.should.have.property("waitlistLimitReached");
-        db.waitlistLimitReached.should.be.a.Function();
+        db.waitlistLimitReached.should.be.a("function");
       });
     });
   });
@@ -63,90 +73,84 @@ describe("Database", () => {
     describe("NotConnectedError", () => {
       it("is defined", () => {
         db.should.have.property("NotConnectedError");
-        new db.NotConnectedError().should.be.Error();
+        new db.NotConnectedError().should.be.an("error");
       });
     });
     describe("NoCustomerError", () => {
       it("is defined", () => {
         db.should.have.property("NoCustomerError");
-        new db.NoCustomerError().should.be.Error();
+        new db.NoCustomerError().should.be.an("error");
       });
     });
     describe("WaitlistLimitError", () => {
       it("is defined", () => {
         db.should.have.property("WaitlistLimitError");
-        new db.WaitlistLimitError().should.be.Error();
+        new db.WaitlistLimitError().should.be.an("error");
       });
     });
   });
-  describe("basic operations", () => {
+  describe("operations", () => {
     // for each test case, use a new empty temporary database
     describe("adding 3 customers", () => {
-      before(() => db.connectTo());
+      before(async () => await db.connectTo());
+
       const customers = [
         ["a", "1"],
         ["b", "2"],
         ["c", "3"],
       ];
-      it("can add customers, and return customer objects", () => {
+
+      it("can add customers, and return customer objects", async () => {
         for (const [name, phone] of customers) {
-          const customer = db.addCustomer(name, phone);
-          customer.should.have.properties(CUSTOMER_PROPERTIES);
+          const customer = await db.addCustomer(name, phone);
+          customer.should.have.all.keys(CUSTOMER_PROPERTIES);
         }
       });
-      it("retrieves a waitlist with the correct amount of people", () => {
-        const waitlist = db.waitlist;
-        waitlist.should.be.an.Array;
-        waitlist.length.should.be.exactly(3);
+      it("retrieves a waitlist with the correct amount of people", async () => {
+        const waitlist = await db.waitlist();
+        waitlist.should.be.an("array");
+        waitlist.should.have.property("length", 3);
       });
-      it("retrieves a waitlist containing customer objects", () => {
-        const waitlist = db.waitlist;
-        for (let customer of waitlist) {
-          customer.should.have.properties(CUSTOMER_PROPERTIES);
+      it("retrieves a waitlist containing customer objects", async () => {
+        const waitlist = await db.waitlist();
+        for (const customer of waitlist) {
+          customer.should.have.all.keys(CUSTOMER_PROPERTIES);
         }
       });
-      it("the waitlist is not directly linked to the database waitlist", () => {
+      it("the waitlist is not directly linked to the database waitlist", async () => {
         // get waitlist
-        let waitlist = db.waitlist;
+        let waitlist = await db.waitlist();
         // remove some customers from retrieved list
         waitlist.splice(0, 2);
         // get waitlist again
-        waitlist = db.waitlist;
+        waitlist = await db.waitlist();
         // waitlist should be unchanged
-        waitlist.length.should.be.exactly(3);
+        waitlist.should.have.property("length", 3);
       });
-      it("added customers in the order specified", () => {
-        const waitlist = db.waitlist;
+      it("added customers in the order specified", async () => {
+        const waitlist = await db.waitlist();
         const waitlistNames = waitlist.map((c) => c.name);
         const customerNames = customers.map((c) => c[0]);
-        should(arraysEqual(waitlistNames, customerNames));
+        waitlistNames.should.deep.equal(customerNames);
       });
-      it("can remove customers, and return customer objects", () => {
+      it("can remove customers, and return customer objects", async () => {
         for (let i = 2; i >= 0; i--) {
           // remove last customer in list each time
-          const customer = db.removeCustomer(i);
-          customer.should.have.properties(CUSTOMER_PROPERTIES);
-          customer.name.should.be.exactly(customers[i][0]);
+          const customer = await db.removeCustomer(i);
+          customer.should.have.all.keys(CUSTOMER_PROPERTIES);
+          customer.name.should.equal(customers[i][0]);
         }
       });
-      it("the waitlist is now empty", () => {
-        const waitlist = db.waitlist;
-        waitlist.length.should.be.exactly(0);
+      it("the waitlist is now empty", async () => {
+        const waitlist = await db.waitlist();
+        waitlist.should.have.property("length", 0);
       });
     });
     describe("invalid operations", () => {
-      before(() => db.connectTo());
+      before(async () => await db.connectTo());
 
-      it("cannot remove from an empty list", () => {
-        (() => db.removeCustomer(0)).should.throw(db.NoCustomerError);
-      });
-
-      it("cannot remove from invalid index", () => {
-        db.addCustomer("a", "a");
-        db.addCustomer("a", "a");
-        (() => db.removeCustomer(99)).should.throw(db.NoCustomerError);
-        db.removeCustomer(0);
-        db.removeCustomer(0);
+      it("cannot remove from an empty list", async () => {
+        return db.removeCustomer(0).should.be.rejectedWith(db.NoCustomerError);
       });
     });
     describe("waitlist with 5 customers and size-limit of 5", () => {
@@ -157,29 +161,24 @@ describe("Database", () => {
         ["dd", "44444"],
         ["ee", "55555"],
       ];
-      before(() => {
-        db.connectTo();
-        db.waitlistLimit = 5;
+      beforeEach(async () => {
+        await db.connectTo();
+        await db.setWaitlistLimit(5);
         for (const [name, phone] of customers) {
-          const customer = db.addCustomer(name, phone);
-          customer.should.have.properties(CUSTOMER_PROPERTIES);
+          await db.addCustomer(name, phone);
         }
       });
       it("cannot add a customer", () => {
-        const oldLength = db.waitlist.length;
-        (() => db.addCustomer("not allowed", "no")).should.throw(
-          db.WaitlistLimitError
-        );
-        db.waitlist.length.should.be.exactly(oldLength);
+        return db
+          .addCustomer("not allowed", "no")
+          .should.be.rejectedWith(db.WaitlistLimitError);
       });
-      it("after removing a customer, can add a customer", () => {
-        const oldLength = db.waitlist.length;
-        const firstCustomer = db.removeCustomer(0);
-        firstCustomer.name.should.be.exactly(customers[0][0]);
-        db.addCustomer("allowed", "yes");
-        // final length should be unchanged
-        db.waitlist.length.should.be.exactly(oldLength);
-      })
+      it("after removing a customer, can add a customer", async () => {
+        const oldLength = (await db.waitlist()).length;
+        const firstCustomer = await db.removeCustomer(0);
+        firstCustomer.should.have.property("name", customers[0][0]);
+        return db.addCustomer("allowed", "yes").should.not.throw;
+      });
     });
     describe("waitlist with 5 customers, size-limit of 3 set afterwards", () => {
       const customers = [
@@ -189,35 +188,26 @@ describe("Database", () => {
         ["dd", "44444"],
         ["ee", "55555"],
       ];
-      before(() => {
-        db.connectTo();
+      before(async () => {
+        await db.connectTo();
         for (const [name, phone] of customers) {
-          const customer = db.addCustomer(name, phone);
-          customer.should.have.properties(CUSTOMER_PROPERTIES);
+          const customer = await db.addCustomer(name, phone);
+          customer.should.have.all.keys(CUSTOMER_PROPERTIES);
         }
-        db.waitlistLimit = 3;
+        await db.setWaitlistLimit(3);
       });
       it("cannot add a customer", () => {
-        const oldLength = db.waitlist.length;
-        (() => db.addCustomer("not allowed", "no")).should.throw(
-          db.WaitlistLimitError
-        );
-        db.waitlist.length.should.be.exactly(oldLength);
+        return db
+          .addCustomer("not allowed", "no")
+          .should.be.rejectedWith(db.WaitlistLimitError);
       });
-      it("can add a customer only after removing 3 customers", () => {
-        const oldLength = db.waitlist.length;
+      it("can add a customer after removing 3 customers", async () => {
         for (let i = 0; i < 3; i++) {
-          // cannot add customers
-          (() => db.addCustomer("not allowed", "no")).should.throw(
-            db.WaitlistLimitError
-          );
           // remove first 3 customers
-          db.removeCustomer(0);
+          await db.removeCustomer(0);
         }
-        db.addCustomer("allowed", "yes");
-        // final length should be unchanged
-        db.waitlist.length.should.be.exactly(3);
-      })
+        return db.addCustomer("allowed", "yes").should.be.fulfilled;
+      });
     });
   });
 });
