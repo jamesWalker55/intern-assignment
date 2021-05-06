@@ -1,3 +1,5 @@
+"use strict";
+
 const sq = require("./sequelize");
 const debug = require("debug")("sequelize: wrapper");
 
