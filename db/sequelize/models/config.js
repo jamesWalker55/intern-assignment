@@ -31,7 +31,7 @@ class Config extends Model {
    */
   static async set(key, value) {
     debug(`Setting (${key}) = (${value})`)
-    const row = (await conf.findOrBuild({where:{key: key}}))[0]
+    const row = (await this.findOrBuild({where:{key: key}}))[0]
     row.value = value;
     row.save();
   }
@@ -43,7 +43,7 @@ class Config extends Model {
    */
   static async get(key) {
     debug(`Retrieving value from key (${key})`)
-    const row = (await conf.findOrBuild({where:{key: key}}))[0]
+    const row = (await this.findOrBuild({where:{key: key}}))[0]
     const value = row.value;
     debug(`Retrieved value (${key})=>(${value})`)
     return value;
