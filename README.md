@@ -2,6 +2,8 @@
 
 This is a REST API implemented in NodeJS, using the **express.js** framework as the base.
 
+Note: Node version >= 12 is required for this server.
+
 ## Start the server / Running unit tests
 
 Install packages
