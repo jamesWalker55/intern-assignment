@@ -23,6 +23,9 @@ Start REST server (starts at `localhost:3000/` by default)
 set DEBUG=* & npm start
 # alternatively
 npm run devstart
+
+# for linux:
+DEBUG=* npm start
 ```
 
 ## Usage
