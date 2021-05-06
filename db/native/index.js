@@ -5,10 +5,10 @@ const debug = require("debug")("native: main");
 
 class NativeModel {
   // define errors
-  NotConnectedError = class extends Error {
-    constructor() {
-      super("Not connected to database yet!");
-      this.name = `NotConnectedError`;
+  ConnectionError = class extends Error {
+    constructor(message) {
+      super(message);
+      this.name = `ConnectionError`;
     }
   };
 
@@ -66,7 +66,7 @@ class NativeModel {
    * throws NoCustomerError if index doesn't correspond to a customer
    */
   async removeCustomer(index) {
-    if (this.list === undefined) throw new this.NotConnectedError();
+    if (this.list === undefined) throw new this.ConnectionError();
     const result = this.list.splice(index, 1);
     if (result.length == 0)
       throw new this.NoCustomerError(`No customer with index ${index} found.`);
@@ -78,7 +78,7 @@ class NativeModel {
    * return the waitlist as an array of customer objects
    */
   async waitlist() {
-    if (this.list === undefined) throw new this.NotConnectedError();
+    if (this.list === undefined) throw new this.ConnectionError();
     return this.list.map((x, i) => this.Customer(x[0], x[1], i));
   }
   
@@ -86,7 +86,7 @@ class NativeModel {
    * return waitlist size limit, 0 represents no limit
    */
   async getWaitlistLimit() {
-    if (this.limit === undefined) throw new this.NotConnectedError();
+    if (this.limit === undefined) throw new this.ConnectionError();
     return this.limit;
   }
   
@@ -94,7 +94,7 @@ class NativeModel {
    * set waitlist size limit; value of 0 disables limit
    */
   async setWaitlistLimit(limit) {
-    if (this.limit === undefined) throw new this.NotConnectedError();
+    if (this.limit === undefined) throw new this.ConnectionError();
     this.limit = limit;
   }
 
@@ -102,7 +102,7 @@ class NativeModel {
    * check if limit has been reached; value of 0 disables limit
    */
   async waitlistLimitReached() {
-    if (this.list === undefined) throw new this.NotConnectedError();
+    if (this.list === undefined) throw new this.ConnectionError();
     if (this.limit === 0) return false;
     return this.list.length >= this.limit;
   }

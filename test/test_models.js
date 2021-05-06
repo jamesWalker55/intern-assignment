@@ -70,10 +70,10 @@ describe("Database", () => {
     });
   });
   describe("exception classes", () => {
-    describe("NotConnectedError", () => {
+    describe("ConnectionError", () => {
       it("is defined", () => {
-        db.should.have.property("NotConnectedError");
-        new db.NotConnectedError().should.be.an("error");
+        db.should.have.property("ConnectionError");
+        new db.ConnectionError().should.be.an("error");
       });
     });
     describe("NoCustomerError", () => {
