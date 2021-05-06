@@ -3,7 +3,5 @@ BACKEND_MAP = {
   sqlite3: "./sequelize",
 }
 
-backend_path = BACKEND_MAP["native"]
-
-module.exports = require("./native");
+module.exports = require("./sequelize");
 
