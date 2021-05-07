@@ -2,3 +2,4 @@ node_modules/
 unused/
 .vscode/
 *.sqlite
+workspace.code-workspace
