@@ -65,12 +65,6 @@ class Customer extends Model {
   }
 }
 
-// // this function defines the customer model, given the sequelize instance
-// const defineCustomer = (sequelize) => {
-//   const final_options = Object.assign({ sequelize }, options);
-//   return Customer.init(attributes, final_options);
-// };
-
 module.exports = {
   model: Customer,
   attributes,
